@@ -2,9 +2,22 @@
 
 from pathlib import Path
 from tabula import read_pdf
+import pprint
+
 
 # Constants
 DATA_SOURCE_PATH = 'data sources'
+
+
+def a2i(s):
+    """Coverts a string with commas to int if possible, None otherwise."""
+    print('Trying to convert', s)
+    if isinstance(s, float):
+        return None
+    try:
+        return int(s)
+    except ValueError:
+        return None if ',' not in s else int(s.replace(',', '_'))
 
 
 def getFiles():
@@ -20,33 +33,40 @@ def getFiles():
 
 def parseAppliedData(file, countries):
     """Parse file with DV applied data."""
-    # print('parseAppliedData:', file)
-    f = read_pdf(files['applied'][0],
-                 pages="all",
-                 output_format="json",
-                 lattice=True,
-                 silent=True)
-    for x in f:
-        for i in x["data"]:
-            if '' == i[0]["text"]:
-                continue
-            if 'Total' in i[0]["text"]:
-                continue
-            if 'Foreign State' in i[0]["text"]:
-                continue
-            # print(i[0]['text'])
-            countries[i[0]['text']] = {}
+    print('parseAppliedData:', file)
+    df = read_pdf(file,
+                  pages="all",
+                  lattice=True,
+                  silent=True)
+
+    years = [int(x[3:]) for x in df[0].columns if 'FY' in x]
+
+    for line in (line for table in df for line in table.values):
+        if isinstance(line[0], float):
+            continue
+        if 'Foreign' in line[0]:
+            continue
+        if 'Total' in line[0]:
+            continue
+        for i, year in enumerate(years):
+            countries.setdefault(line[0], {})
+            countries[line[0]][year] = [a2i(line[3*i+1]),
+                                        a2i(line[3*i+2]),
+                                        None,
+                                        None]
     return countries
 
 
 def parseSelectedData(file, countries):
     """Parse file with DV selected data."""
     print('parseSelectedData:', file)
+    return countries
 
 
 def parseIssuedData(file, countries):
     """Parse file with DV issued data."""
     print('parseIssuedData:', file)
+    return countries
 
 
 def parseDvData(files):
@@ -74,6 +94,6 @@ if __name__ == "__main__":
 
     # Parse files into dictionary.
     countries = parseDvData(files)
-
+    pprint.pprint(countries)
     # Export data.
     exportDvData(countries)
