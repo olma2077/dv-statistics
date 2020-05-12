@@ -118,7 +118,7 @@ def parseAppliedData(file, countries):
     return countries
 
 
-def parse_row(row):
+def parseRow(row):
     """Parse single row of an html table."""
     # Fix unicode issues
     line = normalize("NFKD", row.get_text().replace('\r', ' '))
@@ -137,7 +137,7 @@ def parseSelectedData(file, countries):
 
     year = int(re.findall(r'\d{4}', f.name)[0])
 
-    for line in (parse_row(row) for row in soup.find_all('tr')):
+    for line in (parseRow(row) for row in soup.find_all('tr')):
         for country, people in line:
             country = normalizeCountry(country)
             if country in countries:
