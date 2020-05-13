@@ -43,11 +43,14 @@ def normalizeCountry(country):
         'Cape Verde': 'Cabo Verde',
         'Central African Rep': 'Central African Republic',
         'China-Taiwan': 'Taiwan',
+        'China - Taiwan Born': 'Taiwan',
         'Cocos Islands': 'Cocos (Keeling) Islands',
         'Cocos Keeling Islands': 'Cocos (Keeling) Islands',
         'Congo': 'Congo, Republic Of The',
         'Congo-Brazzaville': 'Congo, Republic Of The',
         'Congo-Kinshasa': 'Congo, Democratic Republic Of The',
+        'Congo, Dem. Rep. Of The': 'Congo, Democratic Republic Of The',
+        'Congo, Rep. Of The': 'Congo, Republic Of The',
         'Cote D\'Ivoire': 'Cote D’Ivoire',
         'East Timor': 'Timor-Leste',
         'French Southern & Antarctic Lands':
@@ -88,7 +91,6 @@ def normalizeCountry(country):
 def parseAppliedData(file, countries):
     """Parse file with DV applied data."""
     print('parseAppliedData:', file)
-    # return countries
     df = read_pdf(file,
                   pages="all",
                   lattice=True,
@@ -131,7 +133,6 @@ def parseRow(row):
 def parseSelectedData(file, countries):
     """Parse file with DV selected data."""
     print('parseSelectedData:', file)
-    # return countries
     f = open(file, encoding="utf-8")
     soup = BeautifulSoup(f, "html.parser")
 
@@ -152,6 +153,31 @@ def parseSelectedData(file, countries):
 def parseIssuedData(file, countries):
     """Parse file with DV issued data."""
     print('parseIssuedData:', file)
+    df = read_pdf(file,
+                  pages="all",
+                  silent=True)
+
+    years = [int(x) for x in df[0].columns[1:]]
+
+    for line in (line for table in df for line in table.values):
+        # Skip technical lines
+        if 'Foreign' in line[0]:
+            continue
+        if 'Total' in line[0].title():
+            continue
+        if 'South America' in line[0]:
+            continue
+        if isinstance(line[1], float):
+            continue
+
+        country = normalizeCountry(line[0].title())
+        if country in countries:
+            for i, year in enumerate(years):
+                countries[country][year][3] = a2i(line[i+1])
+        else:
+            # Something is wrong, this shouldn't happen normally.
+            print(country, 'is missing, possible typo in source file.')
+
     return countries
 
 
@@ -160,6 +186,7 @@ def parseDvData(files):
     # Country is a dict of countries with dict of years with data:
     # {country: {fiscal_year: [entrants, derivatives, selected, issued]}}
     countries = {}
+
     parser = [parseAppliedData, parseSelectedData, parseIssuedData]
     for i, l in enumerate(list(files.values())):
         for f in l:
@@ -180,6 +207,10 @@ def main():
 
     # Parse files into dictionary.
     countries = parseDvData(files)
-    # pprint.pprint(countries)
+
     # Export data.
     exportDvData(countries)
+
+
+if __name__ == "__main__":
+    main()
