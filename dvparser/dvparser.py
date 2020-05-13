@@ -3,8 +3,9 @@
 from pathlib import Path
 import re
 from unicodedata import normalize
+import json
 
-from tabula import read_pdf
+import tabula
 from bs4 import BeautifulSoup
 
 
@@ -12,6 +13,7 @@ from bs4 import BeautifulSoup
 DATA_SOURCE_PATH = 'data sources'
 START_YEAR = 2007
 END_YEAR = 2021
+OUT_FILE = 'countries.json'
 
 
 def a2i(s):
@@ -91,10 +93,10 @@ def normalizeCountry(country):
 def parseAppliedData(file, countries):
     """Parse file with DV applied data."""
     print('parseAppliedData:', file)
-    df = read_pdf(file,
-                  pages="all",
-                  lattice=True,
-                  silent=True)
+    df = tabula.read_pdf(file,
+                         pages="all",
+                         lattice=True,
+                         silent=True)
 
     years = [int(x[3:]) for x in df[0].columns if 'FY' in x]
 
@@ -133,8 +135,8 @@ def parseRow(row):
 def parseSelectedData(file, countries):
     """Parse file with DV selected data."""
     print('parseSelectedData:', file)
-    f = open(file, encoding="utf-8")
-    soup = BeautifulSoup(f, "html.parser")
+    with open(file, encoding="utf-8") as f:
+        soup = BeautifulSoup(f, "html.parser")
 
     year = int(re.findall(r'\d{4}', f.name)[0])
 
@@ -153,9 +155,9 @@ def parseSelectedData(file, countries):
 def parseIssuedData(file, countries):
     """Parse file with DV issued data."""
     print('parseIssuedData:', file)
-    df = read_pdf(file,
-                  pages="all",
-                  silent=True)
+    df = tabula.read_pdf(file,
+                         pages="all",
+                         silent=True)
 
     years = [int(x) for x in df[0].columns[1:]]
 
@@ -197,7 +199,8 @@ def parseDvData(files):
 
 def exportDvData(countries):
     """Export dict of countries with data into a file."""
-    pass
+    with open(OUT_FILE, 'w') as f:
+        json.dump(countries, f, sort_keys=True)
 
 
 def main():
