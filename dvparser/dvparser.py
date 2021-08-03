@@ -2,21 +2,25 @@
 
 from pathlib import Path
 import re
+from typing import Optional
 from unicodedata import normalize
 import json
+import datetime
+import os
 
 import tabula
 from bs4 import BeautifulSoup
 
 
 # Constants
-DATA_SOURCE_PATH = 'data sources'
+DATA_SOURCE_PATH = 'data_sources'
 START_YEAR = 2007
-END_YEAR = 2021
+END_YEAR = datetime.date.today().year
 OUT_FILE = 'countries.json'
+SHELL_DOWNLOADER = './get_data_sources.sh'
 
 
-def a2i(s):
+def a2i(s: str) -> Optional[int]:
     """Coverts a string with commas to int if possible, None otherwise."""
     if isinstance(s, float):
         return None
@@ -26,9 +30,18 @@ def a2i(s):
         return None if ',' not in s else int(s.replace(',', '_'))
 
 
-def getFiles():
+def initDataSources():
+    """Quick hack with shell script"""
+    os.system(SHELL_DOWNLOADER)
+
+
+def getFiles() -> dict:
     """Collect available data sources."""
     files = {}
+
+    if not Path(DATA_SOURCE_PATH).exists():
+        print(f"Data sources are missing, downloading...")
+        initDataSources()
 
     files['applied'] = list(Path(DATA_SOURCE_PATH).glob('DV*.pdf'))
     files['selected'] = list(Path(DATA_SOURCE_PATH).glob('*.html'))
@@ -37,7 +50,7 @@ def getFiles():
     return files
 
 
-def normalizeCountry(country):
+def normalizeCountry(country: str) -> str:
     """Fix difference in country names across files."""
     substitute = {
         'Bahamas': 'Bahamas, The',
@@ -52,6 +65,7 @@ def normalizeCountry(country):
         'Congo-Brazzaville': 'Congo, Republic Of The',
         'Congo-Kinshasa': 'Congo, Democratic Republic Of The',
         'Congo, Dem. Rep. Of The': 'Congo, Democratic Republic Of The',
+        'Congo, Democratic': 'Congo, Democratic Republic Of The',
         'Congo, Rep. Of The': 'Congo, Republic Of The',
         'Cote D\'Ivoire': 'Cote D’Ivoire',
         'East Timor': 'Timor-Leste',
@@ -90,7 +104,7 @@ def normalizeCountry(country):
         return country
 
 
-def parseAppliedData(file, countries):
+def parseAppliedData(file: str, countries: dict) -> dict:
     """Parse file with DV applied data."""
     print('parseAppliedData:', file)
     df = tabula.read_pdf(file,
@@ -100,6 +114,8 @@ def parseAppliedData(file, countries):
 
     years = [int(x[3:]) for x in df[0].columns if 'FY' in x]
 
+    # 2021 year file has new region column we have to skip
+    offset = False
     for line in (line for table in df for line in table.values):
         # Skip technical lines
         if isinstance(line[0], float):
@@ -108,13 +124,22 @@ def parseAppliedData(file, countries):
             continue
         if 'Total' in line[0]:
             continue
+        if 'Region' == line[0]:
+            offset = True
+            continue
+
+        if offset:
+            # Removing Region column
+            line = line.tolist()
+            line.pop(0)
 
         country = normalizeCountry(line[0].title().replace('\r', ' '))
         if country not in countries:
             # Create dict strucuture for new country in dict
             countries[country] = {}
-            for year in range(START_YEAR, END_YEAR):
+            for year in range(START_YEAR, END_YEAR + 1):
                 countries[country][year] = [None, None, None, None]
+
         for i, year in enumerate(years):
             countries[country][year][0] = a2i(line[3*i+1])
             countries[country][year][1] = a2i(line[3*i+2])
@@ -122,7 +147,7 @@ def parseAppliedData(file, countries):
     return countries
 
 
-def parseRow(row):
+def parseRow(row: BeautifulSoup) -> tuple:
     """Parse single row of an html table."""
     # Fix unicode issues
     line = normalize("NFKD", row.get_text().replace('\r', ' '))
@@ -132,7 +157,7 @@ def parseRow(row):
     return tuple(line)
 
 
-def parseSelectedData(file, countries):
+def parseSelectedData(file: str, countries: dict) -> dict:
     """Parse file with DV selected data."""
     print('parseSelectedData:', file)
     with open(file, encoding="utf-8") as f:
@@ -148,11 +173,12 @@ def parseSelectedData(file, countries):
             else:
                 # Something is wrong, this shouldn't happen normally.
                 print(country, 'is missing, possible typo in source file.')
+                print(line)
 
     return countries
 
 
-def parseIssuedData(file, countries):
+def parseIssuedData(file: str, countries: dict) -> dict:
     """Parse file with DV issued data."""
     print('parseIssuedData:', file)
     df = tabula.read_pdf(file,
@@ -183,10 +209,12 @@ def parseIssuedData(file, countries):
     return countries
 
 
-def parseDvData(files):
-    """Parse data from files into dict of countries."""
-    # Country is a dict of countries with dict of years with data:
-    # {country: {fiscal_year: [entrants, derivatives, selected, issued]}}
+def parseDvData(files: dict) -> dict:
+    """Parse data from files into dict of countries.
+
+    Country is a dict of countries with dict of years with data:
+    {country: {fiscal_year: [entrants, derivatives, selected, issued]}}
+    """
     countries = {}
 
     parser = [parseAppliedData, parseSelectedData, parseIssuedData]
@@ -197,7 +225,7 @@ def parseDvData(files):
     return countries
 
 
-def exportDvData(countries):
+def exportDvData(countries: dict):
     """Export dict of countries with data into a file."""
     with open(OUT_FILE, 'w') as f:
         json.dump(countries, f, sort_keys=True)
