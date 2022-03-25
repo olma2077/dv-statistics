@@ -2,10 +2,12 @@
 Parser for selected DV data sources
 """
 
-from bs4 import BeautifulSoup
-from unicodedata import normalize
 import re
-from .helper import normalize_country, a2i
+from unicodedata import normalize
+
+from bs4 import BeautifulSoup
+
+from .helper import a2i, normalize_country
 
 
 def parse_row(row: BeautifulSoup) -> tuple:

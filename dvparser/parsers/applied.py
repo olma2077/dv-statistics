@@ -2,10 +2,11 @@
 Parser for applied DV data sources
 """
 
-import tabula
-from .helper import normalize_country, a2i
 import datetime
 
+import tabula
+
+from .helper import a2i, normalize_country
 
 START_YEAR = 2007
 END_YEAR = datetime.date.today().year

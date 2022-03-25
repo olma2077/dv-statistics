@@ -3,7 +3,8 @@ Parser for issued DV data sources
 """
 
 import tabula
-from .helper import normalize_country, a2i
+
+from .helper import a2i, normalize_country
 
 
 def parse_issued_dv(file: str, countries: dict) -> dict:
