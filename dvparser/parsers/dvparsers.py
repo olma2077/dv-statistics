@@ -1,10 +1,7 @@
 """dv-parser main module."""
 
 import datetime
-import json
-import os
 import re
-from pathlib import Path
 from typing import Optional
 from unicodedata import normalize
 
@@ -12,11 +9,9 @@ import tabula
 from bs4 import BeautifulSoup
 
 # Constants
-DATA_SOURCES_PATH = 'data_sources'
+
 START_YEAR = 2007
 END_YEAR = datetime.date.today().year
-OUTPUT_FILE = 'countries.json'
-SHELL_DOWNLOADER = './get_data_sources.sh'
 
 
 def a2i(string: str) -> Optional[int]:
@@ -27,26 +22,6 @@ def a2i(string: str) -> Optional[int]:
         return int(string)
     except ValueError:
         return None if ',' not in string else int(string.replace(',', '_'))
-
-
-def download_dv_sources():
-    """Quick hack with shell script"""
-    os.system(SHELL_DOWNLOADER)
-
-
-def get_dv_sources() -> dict[str, list[str]]:
-    """Collect available DV sources."""
-    sources = {}
-
-    if not Path(DATA_SOURCES_PATH).exists():
-        print("Data sources are missing, downloading...")
-        download_dv_sources()
-
-    sources['applied'] = list(Path(DATA_SOURCES_PATH).glob('DV*.pdf'))
-    sources['selected'] = list(Path(DATA_SOURCES_PATH).glob('*.html'))
-    sources['issued'] = list(Path(DATA_SOURCES_PATH).glob('FY*.pdf'))
-
-    return sources
 
 
 def normalize_country(country: str) -> str:
@@ -207,34 +182,4 @@ def parse_issued_dv(file: str, countries: dict) -> dict:
     return countries
 
 
-def parse_dv_sources(sources: dict[str, list[str]]) -> dict:
-    """Parse data from files into dict of countries.
 
-    Country is a dict of countries with dict of years with data:
-    {country: {fiscal_year: [entrants, derivatives, selected, issued]}}
-    """
-    countries = {}
-
-    parsers = [parse_applied_dv, parse_selected_dv, parse_issued_dv]
-    for i, files in enumerate(list(sources.values())):
-        for file in files:
-            countries = parsers[i](file, countries)
-
-    return countries
-
-
-def export_dv_data(countries: dict):
-    """Export dict of countries with data into a file."""
-    with open(OUTPUT_FILE, 'w') as file:
-        json.dump(countries, file, sort_keys=True)
-
-
-def main():
-    """Start from here."""
-    sources = get_dv_sources()
-    countries = parse_dv_sources(sources)
-    export_dv_data(countries)
-
-
-if __name__ == "__main__":
-    main()
