@@ -1,6 +1,4 @@
-"""
-Parser for issued DV data sources
-"""
+"""Parser for issued DV data sources."""
 
 import tabula
 

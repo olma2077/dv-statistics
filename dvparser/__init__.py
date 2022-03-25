@@ -1,5 +1,4 @@
-"""
-dv-parser package implements DV reports parsing application.
+"""dv-parser package implements DV reports parsing application.
 
 Parser is capable to parse 3 types of files:
 * Number of online entries

@@ -1,6 +1,4 @@
-"""
-Parser for applied DV data sources
-"""
+"""Parser for applied DV data sources."""
 
 import datetime
 

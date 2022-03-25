@@ -1,6 +1,4 @@
-"""
-Parser for selected DV data sources
-"""
+"""Parser for selected DV data sources."""
 
 import re
 from unicodedata import normalize

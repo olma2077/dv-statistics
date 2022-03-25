@@ -1,6 +1,4 @@
-"""
-Common helper functions for DV parsers
-"""
+"""Common helper functions for DV parsers."""
 
 from typing import Optional
 
