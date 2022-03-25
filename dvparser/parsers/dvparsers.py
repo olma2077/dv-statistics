@@ -8,7 +8,6 @@ from unicodedata import normalize
 import tabula
 from bs4 import BeautifulSoup
 
-# Constants
 
 START_YEAR = 2007
 END_YEAR = datetime.date.today().year
@@ -180,6 +179,3 @@ def parse_issued_dv(file: str, countries: dict) -> dict:
             print(country, 'is missing, possible typo in source file.')
 
     return countries
-
-
-

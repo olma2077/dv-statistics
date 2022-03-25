@@ -26,8 +26,8 @@ def get_dv_sources() -> dict[str, list[str]]:
         download_dv_sources()
 
     sources['applied'] = list(Path(DATA_SOURCES_PATH).glob('DV*.pdf'))
-    sources['selected'] = list(Path(DATA_SOURCES_PATH).glob('*.html'))
     sources['issued'] = list(Path(DATA_SOURCES_PATH).glob('FY*.pdf'))
+    sources['selected'] = list(Path(DATA_SOURCES_PATH).glob('*.html'))
 
     return sources
 
