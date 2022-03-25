@@ -1,27 +1,26 @@
 """dv-parser main module."""
 
-from pathlib import Path
+import datetime
+import json
+import os
 import re
+from pathlib import Path
 from typing import Optional
 from unicodedata import normalize
-import json
-import datetime
-import os
 
 import tabula
 from bs4 import BeautifulSoup
 
-
 # Constants
-DATA_SOURCE_PATH = 'data_sources'
+DATA_SOURCES_PATH = 'data_sources'
 START_YEAR = 2007
 END_YEAR = datetime.date.today().year
-OUT_FILE = 'countries.json'
+OUTPUT_FILE = 'countries.json'
 SHELL_DOWNLOADER = './get_data_sources.sh'
 
 
 def a2i(string: str) -> Optional[int]:
-    """Coverts a string with commas to int if possible, None otherwise."""
+    """Converts a string with commas to int if possible, None otherwise."""
     if isinstance(string, float):
         return None
     try:
@@ -30,29 +29,29 @@ def a2i(string: str) -> Optional[int]:
         return None if ',' not in string else int(string.replace(',', '_'))
 
 
-def init_data_sources():
+def download_dv_sources():
     """Quick hack with shell script"""
     os.system(SHELL_DOWNLOADER)
 
 
-def get_files() -> dict:
-    """Collect available data sources."""
-    files = {}
+def get_dv_sources() -> dict[str, list[str]]:
+    """Collect available DV sources."""
+    sources = {}
 
-    if not Path(DATA_SOURCE_PATH).exists():
+    if not Path(DATA_SOURCES_PATH).exists():
         print("Data sources are missing, downloading...")
-        init_data_sources()
+        download_dv_sources()
 
-    files['applied'] = list(Path(DATA_SOURCE_PATH).glob('DV*.pdf'))
-    files['selected'] = list(Path(DATA_SOURCE_PATH).glob('*.html'))
-    files['issued'] = list(Path(DATA_SOURCE_PATH).glob('FY*.pdf'))
+    sources['applied'] = list(Path(DATA_SOURCES_PATH).glob('DV*.pdf'))
+    sources['selected'] = list(Path(DATA_SOURCES_PATH).glob('*.html'))
+    sources['issued'] = list(Path(DATA_SOURCES_PATH).glob('FY*.pdf'))
 
-    return files
+    return sources
 
 
 def normalize_country(country: str) -> str:
     """Fix difference in country names across files."""
-    substitute = {
+    normalized_countries = {
         'Bahamas': 'Bahamas, The',
         'Bosnia & Herzegovina': 'Bosnia And Herzegovina',
         'Cape Verde': 'Cabo Verde',
@@ -99,25 +98,25 @@ def normalize_country(country: str) -> str:
         'Western Samoa': 'Samoa',
     }
     try:
-        return substitute[country]
+        return normalized_countries[country]
     except KeyError:
         return country
 
 
-def parse_applied_data(file: str, countries: dict) -> dict:
+def parse_applied_dv(file: str, countries: dict) -> dict:
     """Parse file with DV applied data."""
-    print('parseAppliedData:', file)
-    dframe = tabula.read_pdf(
+    print('parse_applied_dv:', file)
+    data_frame = tabula.read_pdf(
         file,
         pages="all",
         lattice=True,
         silent=True)
 
-    years = [int(x[3:]) for x in dframe[0].columns if 'FY' in x]
+    years = [int(x[3:]) for x in data_frame[0].columns if 'FY' in x]
 
     # 2021 year file has new region column we have to skip
     offset = False
-    for line in (line for table in dframe for line in table.values):
+    for line in (line for table in data_frame for line in table.values):
         # Skip technical lines
         if isinstance(line[0], float):
             continue
@@ -158,13 +157,13 @@ def parse_row(row: BeautifulSoup) -> tuple:
     return tuple(line)
 
 
-def parse_selected_data(file_name: str, countries: dict) -> dict:
+def parse_selected_dv(file: str, countries: dict) -> dict:
     """Parse file with DV selected data."""
-    print('parseSelectedData:', file_name)
-    with open(file_name, encoding="utf-8") as file:
-        soup = BeautifulSoup(file, "html.parser")
+    print('parse_selected_dv:', file)
+    with open(file, encoding="utf-8") as file_object:
+        soup = BeautifulSoup(file_object, "html.parser")
 
-    year = int(re.findall(r'\d{4}', file_name.name)[0])
+    year = int(re.findall(r'\d{4}', file.name)[0])
 
     for line in (parse_row(row) for row in soup.find_all('tr')):
         for country, people in line:
@@ -179,16 +178,14 @@ def parse_selected_data(file_name: str, countries: dict) -> dict:
     return countries
 
 
-def parse_issued_data(file_name: str, countries: dict) -> dict:
+def parse_issued_dv(file: str, countries: dict) -> dict:
     """Parse file with DV issued data."""
-    print('parseIssuedData:', file_name)
-    dframe = tabula.read_pdf(file_name,
-                         pages="all",
-                         silent=True)
+    print('parse_issued_dv:', file)
+    data_frame = tabula.read_pdf(file, pages="all", silent=True)
 
-    years = [int(x) for x in dframe[0].columns[1:]]
+    years = [int(x) for x in data_frame[0].columns[1:]]
 
-    for line in (line for table in dframe for line in table.values):
+    for line in (line for table in data_frame for line in table.values):
         # Skip technical lines
         if 'Foreign' in line[0]:
             continue
@@ -210,7 +207,7 @@ def parse_issued_data(file_name: str, countries: dict) -> dict:
     return countries
 
 
-def parse_dv_data(files: dict) -> dict:
+def parse_dv_sources(sources: dict[str, list[str]]) -> dict:
     """Parse data from files into dict of countries.
 
     Country is a dict of countries with dict of years with data:
@@ -218,29 +215,24 @@ def parse_dv_data(files: dict) -> dict:
     """
     countries = {}
 
-    parser = [parse_applied_data, parse_selected_data, parse_issued_data]
-    for i, flist in enumerate(list(files.values())):
-        for file in flist:
-            countries = parser[i](file, countries)
+    parsers = [parse_applied_dv, parse_selected_dv, parse_issued_dv]
+    for i, files in enumerate(list(sources.values())):
+        for file in files:
+            countries = parsers[i](file, countries)
 
     return countries
 
 
 def export_dv_data(countries: dict):
     """Export dict of countries with data into a file."""
-    with open(OUT_FILE, 'w') as file:
+    with open(OUTPUT_FILE, 'w') as file:
         json.dump(countries, file, sort_keys=True)
 
 
 def main():
     """Start from here."""
-    # Form list of files.
-    files = get_files()
-
-    # Parse files into dictionary.
-    countries = parse_dv_data(files)
-
-    # Export data.
+    sources = get_dv_sources()
+    countries = parse_dv_sources(sources)
     export_dv_data(countries)
 
 
