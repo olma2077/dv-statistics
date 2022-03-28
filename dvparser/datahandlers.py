@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 CountryData = dict[int, list[Optional[int]]]
 
 START_YEAR = 2007
-END_YEAR = datetime.date.today().year + 1
+END_YEAR = datetime.date.today().year
 
 
 @dataclass

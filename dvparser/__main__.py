@@ -42,7 +42,7 @@ def parse_dv_sources(sources: list[Source]) -> dict[str, CountryData]:
     countries: dict[str, CountryData] = {}
 
     for source in sources:
-        countries = parsers.parse_dv_data(source, countries)
+        countries = parsers.get_parser(source).parse(source, countries)
 
     return countries
 

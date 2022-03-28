@@ -1,22 +1,49 @@
-from ..datahandlers import CountryData, Source
-from .applied import parse_applied_dv
-from .issued import parse_issued_dv
-from .selected import parse_selected_dv
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Iterable, Any
+
+from ..datahandlers import init_country_data
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from ..datahandlers import CountryData, Source
 
 
-def parse_dv_data(source: Source, countries: dict[str, CountryData]) -> dict[str, CountryData]:
-    """Parse data from files into dict of countries.
+class Parser(ABC):
+    @abstractmethod
+    def _get_file_content(self, file: Path) -> list:
+        pass
 
-    Country is a dict of countries with dict of years with data:
-    {country: {fiscal_year: [entrants, derivatives, selected, issued]}}
-    """
-    if source.type == 'applied':
-        countries = parse_applied_dv(source.file, countries)
-    elif source.type == 'issued':
-        countries = parse_issued_dv(source.file, countries)
-    elif source.type == 'selected':
-        countries = parse_selected_dv(source.file, countries)
-    else:
-        raise ValueError(f'Unknown source type {source.type}')
+    @abstractmethod
+    def _get_years(self, file_content: Any) -> list:
+        pass
 
-    return countries
+    @abstractmethod
+    def _get_line(self, file_content: Any) -> Iterable[list]:
+        pass
+
+    @abstractmethod
+    def _get_country(self, line: list) -> str:
+        pass
+
+    @abstractmethod
+    def _set_country_data(self, country_data: CountryData, years: list, line: list) -> CountryData:
+        pass
+
+    def parse(self, source: Source, countries: dict[str, CountryData]) -> dict[str, CountryData]:
+        """Parse file with DV applied data."""
+        print('Parsing', source.type, source.file.name)
+        file_content = self._get_file_content(source.file)
+
+        years = self._get_years(file_content)
+
+        for line in self._get_line(file_content):
+            country = self._get_country(line)
+            if country not in countries:
+                countries[country] = init_country_data()
+
+            countries[country] = self._set_country_data(countries[country], years, line)
+
+        return countries
