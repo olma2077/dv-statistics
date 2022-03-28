@@ -2,18 +2,15 @@
 
 import json
 import os
-from inspect import getmembers, isfunction
 from pathlib import Path
 
 from dvparser import parsers
 
-from .countries import CountryData
+from .datahandlers import CountryData, Source
 
 DATA_SOURCES_PATH = 'data_sources'
 OUTPUT_FILE = 'countries.json'
 SHELL_DOWNLOADER = './get_data_sources.sh'
-
-Sources = dict[str, list[Path]]
 
 
 def download_dv_sources():
@@ -21,34 +18,31 @@ def download_dv_sources():
     os.system(SHELL_DOWNLOADER)
 
 
-def get_dv_sources() -> Sources:
+def get_dv_sources() -> list[Source]:
     """Collect available DV sources."""
-    sources: Sources = {}
+    sources = []
 
     if not Path(DATA_SOURCES_PATH).exists():
         print("Data sources are missing, downloading...")
         download_dv_sources()
 
-    sources['applied'] = list(Path(DATA_SOURCES_PATH).glob('DV*.pdf'))
-    sources['issued'] = list(Path(DATA_SOURCES_PATH).glob('FY*.pdf'))
-    sources['selected'] = list(Path(DATA_SOURCES_PATH).glob('*.html'))
+    sources += [Source('applied', src) for src in list(Path(DATA_SOURCES_PATH).glob('DV*.pdf'))]
+    sources += [Source('issued', src) for src in list(Path(DATA_SOURCES_PATH).glob('FY*.pdf'))]
+    sources += [Source('selected', src) for src in list(Path(DATA_SOURCES_PATH).glob('*.html'))]
 
     return sources
 
 
-def parse_dv_sources(sources: Sources) -> dict[str, CountryData]:
+def parse_dv_sources(sources: list[Source]) -> dict[str, CountryData]:
     """Parse data from files into dict of countries.
 
     Country is a dict of countries with dict of years with data:
     {country: {fiscal_year: [entrants, derivatives, selected, issued]}}
     """
     countries: dict[str, CountryData] = {}
-    parser_functions = [item[1] for item in getmembers(parsers, isfunction)]
 
-    for i, files in enumerate(list(sources.values())):
-        for file in files:
-            # TODO change implicit map of parser to source type to explicit
-            countries = parser_functions[i](file, countries)
+    for source in sources:
+        countries = parsers.parse_dv_data(source, countries)
 
     return countries
 

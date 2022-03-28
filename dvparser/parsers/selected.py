@@ -10,9 +10,9 @@ from bs4 import BeautifulSoup
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from ..countries import CountryData
+    from ..datahandlers import CountryData
 
-from ..countries import init_country_data, normalize_country
+from ..datahandlers import init_country_data, normalize_country
 from .helper import a2i
 
 

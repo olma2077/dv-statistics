@@ -1,11 +1,23 @@
 """Countries-related stuff."""
+from __future__ import annotations
+
 import datetime
-from typing import Optional
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 CountryData = dict[int, list[Optional[int]]]
 
 START_YEAR = 2007
 END_YEAR = datetime.date.today().year + 1
+
+
+@dataclass
+class Source:
+    type: str
+    file: Path
 
 
 def normalize_country(country: str) -> str:
