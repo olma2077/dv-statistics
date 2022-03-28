@@ -1,11 +1,30 @@
 """Parser for selected DV data sources."""
 
+from __future__ import annotations
+
 import re
+from typing import TYPE_CHECKING, Iterable
 from unicodedata import normalize
 
 from bs4 import BeautifulSoup
 
-from .helper import a2i, normalize_country
+if TYPE_CHECKING:
+    from pathlib import Path
+    from ..countries import CountryData
+
+from ..countries import init_country_data, normalize_country
+from .helper import a2i
+
+
+def get_file_content(file: Path) -> BeautifulSoup:
+    with open(file, encoding="utf-8") as file_object:
+        soup = BeautifulSoup(file_object, "html.parser")
+
+    return soup
+
+
+def get_years(file: Path) -> list:
+    return [int(re.findall(r'\d{4}', file.name)[0])]
 
 
 def parse_row(row: BeautifulSoup) -> tuple:
@@ -18,22 +37,34 @@ def parse_row(row: BeautifulSoup) -> tuple:
     return tuple(line)
 
 
-def parse_selected_dv(file: str, countries: dict) -> dict:
+def get_line(file_content: BeautifulSoup) -> Iterable[list]:
+    for line in (parse_row(row) for row in file_content.find_all('tr')):
+        for country, people in line:
+            yield [country, people]
+
+
+def get_country(line: list) -> str:
+    return normalize_country(line[0])
+
+
+def set_country_data(country_data: CountryData, years: list, line: list) -> CountryData:
+    country_data[years[0]][2] = line[1]
+    return country_data
+
+
+def parse_selected_dv(file: Path, countries: dict) -> dict:
     """Parse file with DV selected data."""
     print('parse_selected_dv:', file)
-    with open(file, encoding="utf-8") as file_object:
-        soup = BeautifulSoup(file_object, "html.parser")
 
-    year = int(re.findall(r'\d{4}', file.name)[0])
+    file_content = get_file_content(file)
 
-    for line in (parse_row(row) for row in soup.find_all('tr')):
-        for country, people in line:
-            country = normalize_country(country)
-            if country in countries:
-                countries[country][year][2] = people
-            else:
-                # Something is wrong, this shouldn't happen normally.
-                print(country, 'is missing, possible typo in source file.')
-                print(line)
+    years = get_years(file)
+
+    for line in get_line(file_content):
+        country = get_country(line)
+        if country not in countries:
+            countries[country] = init_country_data()
+
+        countries[country] = set_country_data(countries[country], years, line)
 
     return countries

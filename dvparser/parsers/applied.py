@@ -1,29 +1,35 @@
-"""Parser for applied DV data sources."""
+"""Parser for applied DV data sources.  """
 
-import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Iterable
 
 import tabula
 
-from .helper import a2i, normalize_country
+if TYPE_CHECKING:
+    from pathlib import Path
+    from ..countries import CountryData
 
-START_YEAR = 2007
-END_YEAR = datetime.date.today().year
+from ..countries import init_country_data, normalize_country
+from .helper import a2i
 
 
-def parse_applied_dv(file: str, countries: dict) -> dict:
-    """Parse file with DV applied data."""
-    print('parse_applied_dv:', file)
-    data_frame = tabula.read_pdf(
+def get_file_content(file: Path) -> list:
+    return tabula.read_pdf(
         file,
         pages="all",
         lattice=True,
         silent=True)
 
-    years = [int(x[3:]) for x in data_frame[0].columns if 'FY' in x]
 
+def get_years(file_content: list) -> list:
+    return [int(x[3:]) for x in file_content[0].columns if 'FY' in x]
+
+
+def get_line(file_content: list) -> Iterable[list]:
     # 2021 year file has new region column we have to skip
     offset = False
-    for line in (line for table in data_frame for line in table.values):
+    for line in (line for table in file_content for line in table.values):
         # Skip technical lines
         if isinstance(line[0], float):
             continue
@@ -40,15 +46,33 @@ def parse_applied_dv(file: str, countries: dict) -> dict:
             line = line.tolist()
             line.pop(0)
 
-        country = normalize_country(line[0].title().replace('\r', ' '))
-        if country not in countries:
-            # Create dict strucuture for new country in dict
-            countries[country] = {}
-            for year in range(START_YEAR, END_YEAR + 1):
-                countries[country][year] = [None, None, None, None]
+        yield line
 
-        for i, year in enumerate(years):
-            countries[country][year][0] = a2i(line[3*i+1])
-            countries[country][year][1] = a2i(line[3*i+2])
+
+def get_country(line: list) -> str:
+    return normalize_country(line[0].title().replace('\r', ' '))
+
+
+def set_country_data(country_data: CountryData, years: list, line: list) -> CountryData:
+    for i, year in enumerate(years):
+        country_data[year][0] = a2i(line[3*i+1])
+        country_data[year][1] = a2i(line[3*i+2])
+
+    return country_data
+
+
+def parse_applied_dv(file: Path, countries: dict) -> dict:
+    """Parse file with DV applied data."""
+    print('parse_applied_dv:', file)
+    file_content = get_file_content(file)
+
+    years = get_years(file_content)
+
+    for line in get_line(file_content):
+        country = get_country(line)
+        if country not in countries:
+            countries[country] = init_country_data()
+
+        countries[country] = set_country_data(countries[country], years, line)
 
     return countries

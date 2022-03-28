@@ -7,9 +7,13 @@ from pathlib import Path
 
 from dvparser import parsers
 
+from .countries import CountryData
+
 DATA_SOURCES_PATH = 'data_sources'
 OUTPUT_FILE = 'countries.json'
 SHELL_DOWNLOADER = './get_data_sources.sh'
+
+Sources = dict[str, list[Path]]
 
 
 def download_dv_sources():
@@ -17,9 +21,9 @@ def download_dv_sources():
     os.system(SHELL_DOWNLOADER)
 
 
-def get_dv_sources() -> dict[str, list[str]]:
+def get_dv_sources() -> Sources:
     """Collect available DV sources."""
-    sources = {}
+    sources: Sources = {}
 
     if not Path(DATA_SOURCES_PATH).exists():
         print("Data sources are missing, downloading...")
@@ -32,13 +36,13 @@ def get_dv_sources() -> dict[str, list[str]]:
     return sources
 
 
-def parse_dv_sources(sources: dict[str, list[str]]) -> dict:
+def parse_dv_sources(sources: Sources) -> dict[str, CountryData]:
     """Parse data from files into dict of countries.
 
     Country is a dict of countries with dict of years with data:
     {country: {fiscal_year: [entrants, derivatives, selected, issued]}}
     """
-    countries = {}
+    countries: dict[str, CountryData] = {}
     parser_functions = [item[1] for item in getmembers(parsers, isfunction)]
 
     for i, files in enumerate(list(sources.values())):
@@ -49,7 +53,7 @@ def parse_dv_sources(sources: dict[str, list[str]]) -> dict:
     return countries
 
 
-def export_dv_data(countries: dict):
+def export_dv_data(countries: dict[str, CountryData]):
     """Export dict of countries with data into a file."""
     with open(OUTPUT_FILE, 'w') as file:
         json.dump(countries, file, sort_keys=True)
