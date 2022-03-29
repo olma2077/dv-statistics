@@ -1,4 +1,5 @@
 # dv-statistics
+[![Updates](https://pyup.io/repos/github/olma2077/dv-statistics/shield.svg)](https://pyup.io/repos/github/olma2077/dv-statistics/)[![Python 3](https://pyup.io/repos/github/olma2077/dv-statistics/python-3-shield.svg)](https://pyup.io/repos/github/olma2077/dv-statistics/)
 
 dv-parser package implements DV reports parsing application.
 
