@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
+from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
@@ -14,9 +15,15 @@ START_YEAR = 2007
 END_YEAR = datetime.date.today().year
 
 
+class SourceType(Enum):
+    APPLIED = 1
+    SELECTED = 2
+    ISSUED = 3
+
+
 @dataclass
 class Source:
-    type: str
+    type: SourceType
     file: Path
 
 

@@ -4,22 +4,23 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ..datahandlers import SourceType
 from .applied import AppliedDVParser
 from .issued import IssuedDVParser
 from .selected import SelectedDVParser
 
 if TYPE_CHECKING:
-    from .parser import Parser
     from ..datahandlers import Source
+    from .parser import Parser
 
 
 def get_parser(source: Source) -> Parser:
     """Get parser for given DV data source."""
-    if source.type == "applied":
+    if source.type == SourceType.APPLIED:
         return AppliedDVParser()
-    elif source.type == "issued":
+    elif source.type == SourceType.ISSUED:
         return IssuedDVParser()
-    elif source.type == "selected":
+    elif source.type == SourceType.SELECTED:
         return SelectedDVParser()
     else:
         raise ValueError(f"Unknown DV data source: {source.type}")

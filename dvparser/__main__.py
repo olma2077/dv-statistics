@@ -6,7 +6,7 @@ from pathlib import Path
 
 from dvparser import parsers
 
-from .datahandlers import CountryData, Source
+from .datahandlers import CountryData, Source, SourceType
 
 DATA_SOURCES_PATH = 'data_sources'
 OUTPUT_FILE = 'countries.json'
@@ -20,15 +20,17 @@ def download_dv_sources():
 
 def get_dv_sources() -> list[Source]:
     """Collect available DV sources."""
-    sources = []
-
     if not Path(DATA_SOURCES_PATH).exists():
         print("Data sources are missing, downloading...")
         download_dv_sources()
 
-    sources += [Source('applied', src) for src in list(Path(DATA_SOURCES_PATH).glob('DV*.pdf'))]
-    sources += [Source('issued', src) for src in list(Path(DATA_SOURCES_PATH).glob('FY*.pdf'))]
-    sources += [Source('selected', src) for src in list(Path(DATA_SOURCES_PATH).glob('*.html'))]
+    applied_files = list(Path(DATA_SOURCES_PATH).glob('DV*.pdf'))
+    issued_files = list(Path(DATA_SOURCES_PATH).glob('FY*.pdf'))
+    selected_files = list(Path(DATA_SOURCES_PATH).glob('*.html'))
+
+    sources = [Source(SourceType.APPLIED, src) for src in applied_files]
+    sources += [Source(SourceType.ISSUED, src) for src in issued_files]
+    sources += [Source(SourceType.SELECTED, src) for src in selected_files]
 
     return sources
 
