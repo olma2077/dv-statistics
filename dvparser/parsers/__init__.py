@@ -18,12 +18,12 @@ def get_parser(source: Source) -> Parser:
     """Get parser for given DV data source."""
     if source.type == SourceType.APPLIED:
         return AppliedDVParser()
-    elif source.type == SourceType.ISSUED:
+    if source.type == SourceType.ISSUED:
         return IssuedDVParser()
-    elif source.type == SourceType.SELECTED:
+    if source.type == SourceType.SELECTED:
         return SelectedDVParser()
-    else:
-        raise ValueError(f"Unknown DV data source: {source.type}")
+
+    raise ValueError(f"Unknown DV data source: {source.type}")
 
 
 __all__ = ['get_parser']

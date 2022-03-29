@@ -18,6 +18,7 @@ from .parser import Parser
 
 
 class SelectedDVParser(Parser):
+    """Parser implementation for selected DV data sources."""
     def _get_file_content(self, file: Path) -> BeautifulSoup:
         with open(file, encoding="utf-8") as file_object:
             soup = BeautifulSoup(file_object, "html.parser")
@@ -27,6 +28,7 @@ class SelectedDVParser(Parser):
     def _get_years(self, file_content: BeautifulSoup) -> list:
         return [int(re.findall(r'\d{4}', file_content.find('title').get_text())[0])]
 
+    # pylint: disable=no-self-use
     def _parse_row(self, row: BeautifulSoup) -> tuple:
         """Parse single row of an html table."""
         # Fix unicode issues

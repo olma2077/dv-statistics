@@ -1,5 +1,4 @@
 """Parser for applied DV data sources.  """
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterable
@@ -16,6 +15,7 @@ from .parser import Parser
 
 
 class AppliedDVParser(Parser):
+    """Parser implementation for applied DV data sources."""
     def _get_file_content(self, file: Path) -> list:
         return tabula.read_pdf(file, pages='all', lattice=True, silent=True)
 

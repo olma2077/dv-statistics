@@ -51,7 +51,7 @@ def parse_dv_sources(sources: list[Source]) -> dict[str, CountryData]:
 
 def export_dv_data(countries: dict[str, CountryData]):
     """Export dict of countries with data into a file."""
-    with open(OUTPUT_FILE, 'w') as file:
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as file:
         json.dump(countries, file, sort_keys=True)
 
 

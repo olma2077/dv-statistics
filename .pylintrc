@@ -1,5 +1,11 @@
 [MASTER]
 init-hook='import sys; sys.path.append("env/lib/python3.9/site-packages")'
+min-public-methods=1
 
 [MESSAGES CONTROL]
-disable=C0122
+disable=C0413
+
+[SIMILARITIES]
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes

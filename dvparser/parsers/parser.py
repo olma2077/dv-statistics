@@ -1,3 +1,8 @@
+"""Abstract Parser class definition.
+
+Parser defines parsing flow and methods required for implementation
+to parse different DV data sources."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -12,6 +17,7 @@ if TYPE_CHECKING:
 
 
 class Parser(ABC):
+    """Abstract parser class."""
     @abstractmethod
     def _get_file_content(self, file: Path) -> list:
         pass

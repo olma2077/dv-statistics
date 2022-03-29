@@ -16,6 +16,7 @@ END_YEAR = datetime.date.today().year
 
 
 class SourceType(Enum):
+    """Type of DV source file."""
     APPLIED = 1
     SELECTED = 2
     ISSUED = 3
@@ -23,6 +24,7 @@ class SourceType(Enum):
 
 @dataclass
 class Source:
+    """DV data source file with its type."""
     type: SourceType
     file: Path
 
@@ -82,6 +84,7 @@ def normalize_country(country: str) -> str:
 
 
 def init_country_data() -> CountryData:
+    """Initialize country data structure."""
     country_data: CountryData = {}
     for year in range(START_YEAR, END_YEAR):
         country_data[year] = [None, None, None, None]
