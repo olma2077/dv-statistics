@@ -28,7 +28,6 @@ class SelectedDVParser(Parser):
     def _get_years(self, file_content: BeautifulSoup) -> list:
         return [int(re.findall(r'\d{4}', file_content.find('title').get_text())[0])]
 
-    # pylint: disable=no-self-use
     def _parse_row(self, row: BeautifulSoup) -> tuple:
         """Parse single row of an html table."""
         # Fix unicode issues
