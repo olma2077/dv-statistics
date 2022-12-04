@@ -1,2 +1,2 @@
 beautifulsoup4==4.11.1
-tabula-py==2.5.1
+tabula-py==2.6.0
