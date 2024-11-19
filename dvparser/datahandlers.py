@@ -77,6 +77,7 @@ def normalize_country(country: str) -> str:
         'Western  Samoa': 'Samoa',
         'Western Samoa': 'Samoa',
     }
+
     try:
         return normalized_countries[country]
     except KeyError:
