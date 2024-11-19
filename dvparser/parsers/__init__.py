@@ -16,12 +16,13 @@ if TYPE_CHECKING:
 
 def get_parser(source: Source) -> Parser:
     """Get parser for given DV data source."""
-    if source.type == SourceType.APPLIED:
-        return AppliedDVParser()
-    if source.type == SourceType.ISSUED:
-        return IssuedDVParser()
-    if source.type == SourceType.SELECTED:
-        return SelectedDVParser()
+    match source.type:
+        case SourceType.APPLIED:
+            return AppliedDVParser()
+        case SourceType.ISSUED:
+            return IssuedDVParser()
+        case SourceType.SELECTED:
+            return SelectedDVParser()
 
     raise ValueError(f"Unknown DV data source: {source.type}")
 
