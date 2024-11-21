@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 
-from . import parsers
+from dvparser import parsers
 
 from .datahandlers import CountryData, Source, SourceType
 
