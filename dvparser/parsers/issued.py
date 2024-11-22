@@ -25,9 +25,7 @@ class IssuedDVParser(Parser):
     def _get_line(self, file_content: list) -> Iterable[list]:
         for line in (line for table in file_content for line in table.values):
             # Skip technical lines
-            if 'Foreign' in line[0]:
-                continue
-            if 'Total' in line[0].title():
+            if 'Foreign' in line[0] or 'Total' in line[0].title():
                 continue
             if 'South America' in line[0]:
                 continue
@@ -41,6 +39,6 @@ class IssuedDVParser(Parser):
 
     def _set_country_data(self, country_data: CountryData, years: list, line: list) -> CountryData:
         for i, year in enumerate(years):
-            country_data[year][3] = a2i(line[i+1])
+            country_data[year].issued = a2i(line[i+1])
 
         return country_data

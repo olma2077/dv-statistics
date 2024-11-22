@@ -2,17 +2,27 @@
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
+import dataclasses
 from enum import Enum
+from json import JSONEncoder
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-CountryData = dict[int, list[Optional[int]]]
-
 START_YEAR = 2007
 END_YEAR = datetime.date.today().year
+
+
+@dataclasses.dataclass
+class YearData():
+    entrants: Optional[int] = None
+    derivatives: Optional[int] = None
+    selected: Optional[int] = None
+    issued: Optional[int] = None
+
+
+CountryData = dict[int, YearData]
 
 
 class SourceType(Enum):
@@ -22,11 +32,18 @@ class SourceType(Enum):
     ISSUED = 3
 
 
-@dataclass
+@dataclasses.dataclass
 class Source:
     """DV data source file with its type."""
     type: SourceType
     file: Path
+
+
+class EnhancedJSONEncoder(JSONEncoder):
+        def default(self, o):
+            if dataclasses.is_dataclass(o):
+                return dataclasses.asdict(o)
+            return super().default(o)
 
 
 def normalize_country(country: str) -> str:
@@ -86,8 +103,4 @@ def normalize_country(country: str) -> str:
 
 def init_country_data() -> CountryData:
     """Initialize country data structure."""
-    country_data: CountryData = {}
-    for year in range(START_YEAR, END_YEAR):
-        country_data[year] = [None, None, None, None]
-
-    return country_data
+    return {year: YearData() for year in range(START_YEAR, END_YEAR)}

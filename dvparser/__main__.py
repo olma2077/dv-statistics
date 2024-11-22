@@ -6,14 +6,14 @@ from pathlib import Path
 
 from dvparser import parsers
 
-from .datahandlers import CountryData, Source, SourceType
+from .datahandlers import CountryData, Source, SourceType, EnhancedJSONEncoder
 
 DATA_SOURCES_PATH = 'data_sources'
 OUTPUT_FILE = 'countries.json'
 SHELL_DOWNLOADER = './get_data_sources.sh'
 
 
-def download_dv_sources():
+def download_dv_sources() -> None:
     """Quick hack with shell script"""
     os.system(SHELL_DOWNLOADER)
 
@@ -49,13 +49,13 @@ def parse_dv_sources(sources: list[Source]) -> dict[str, CountryData]:
     return countries
 
 
-def export_dv_data(countries: dict[str, CountryData]):
+def export_dv_data(countries: dict[str, CountryData]) -> None:
     """Export dict of countries with data into a file."""
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as file:
-        json.dump(countries, file, sort_keys=True)
+        json.dump(countries, file, cls=EnhancedJSONEncoder, sort_keys=True, indent=2)
 
 
-def main():
+def main() -> None:
     """Start from here."""
     sources = get_dv_sources()
     countries = parse_dv_sources(sources)

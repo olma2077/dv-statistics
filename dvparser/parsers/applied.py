@@ -29,9 +29,7 @@ class AppliedDVParser(Parser):
             # Skip technical lines
             if isinstance(line[0], float):
                 continue
-            if 'Foreign' in line[0]:
-                continue
-            if 'Total' in line[0]:
+            if 'Foreign' in line[0] or 'Total' in line[0]:
                 continue
             if 'Region' == line[0]:
                 offset = True
@@ -49,7 +47,7 @@ class AppliedDVParser(Parser):
 
     def _set_country_data(self, country_data: CountryData, years: list, line: list) -> CountryData:
         for i, year in enumerate(years):
-            country_data[year][0] = a2i(line[3*i+1])
-            country_data[year][1] = a2i(line[3*i+2])
+            country_data[year].entrants = a2i(line[3*i+1])
+            country_data[year].derivatives = a2i(line[3*i+2])
 
         return country_data
