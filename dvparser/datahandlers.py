@@ -16,6 +16,7 @@ END_YEAR = datetime.date.today().year
 
 @dataclasses.dataclass
 class YearData():
+    """Applicants data for a given year."""
     entrants: Optional[int] = None
     derivatives: Optional[int] = None
     selected: Optional[int] = None
@@ -40,6 +41,7 @@ class Source:
 
 
 class EnhancedJSONEncoder(JSONEncoder):
+    """Custom parser for dataclasses"""
     def default(self, o):
         if dataclasses.is_dataclass(o):
             return dataclasses.asdict(o)
