@@ -40,10 +40,10 @@ class Source:
 
 
 class EnhancedJSONEncoder(JSONEncoder):
-        def default(self, o):
-            if dataclasses.is_dataclass(o):
-                return dataclasses.asdict(o)
-            return super().default(o)
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        return super().default(o)
 
 
 def normalize_country(country: str) -> str:
