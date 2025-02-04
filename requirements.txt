@@ -1,2 +1,2 @@
-beautifulsoup4==4.12.3
+beautifulsoup4==4.13.1
 tabula-py==2.10.0
