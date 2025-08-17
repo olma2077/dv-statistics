@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 class Parser(ABC):
     """Abstract parser class."""
+
     @abstractmethod
     def _get_file_content(self, file: Path) -> list:
         pass
@@ -40,7 +41,7 @@ class Parser(ABC):
 
     def parse(self, source: Source, countries: dict[str, CountryData]) -> dict[str, CountryData]:
         """Parse file with DV applied data."""
-        print('Parsing', source.type, source.file.name)
+        print("Parsing", source.type, source.file.name)
         file_content = self._get_file_content(source.file)
 
         years = self._get_years(file_content)

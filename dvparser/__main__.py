@@ -8,9 +8,9 @@ from dvparser import parsers
 
 from .datahandlers import CountryData, Source, SourceType, EnhancedJSONEncoder
 
-DATA_SOURCES_PATH = 'data_sources'
-OUTPUT_FILE = 'countries.json'
-SHELL_DOWNLOADER = './get_data_sources.sh'
+DATA_SOURCES_PATH = "data_sources"
+OUTPUT_FILE = "countries.json"
+SHELL_DOWNLOADER = "./get_data_sources.sh"
 
 
 def download_dv_sources() -> None:
@@ -24,9 +24,9 @@ def get_dv_sources() -> list[Source]:
         print("Data sources are missing, downloading...")
         download_dv_sources()
 
-    applied_files = list(Path(DATA_SOURCES_PATH).glob('DV*.pdf'))
-    issued_files = list(Path(DATA_SOURCES_PATH).glob('FY*.pdf'))
-    selected_files = list(Path(DATA_SOURCES_PATH).glob('*.html'))
+    applied_files = list(Path(DATA_SOURCES_PATH).glob("DV*.pdf"))
+    issued_files = list(Path(DATA_SOURCES_PATH).glob("FY*.pdf"))
+    selected_files = list(Path(DATA_SOURCES_PATH).glob("*.html"))
 
     sources = [Source(SourceType.APPLIED, src) for src in applied_files]
     sources += [Source(SourceType.ISSUED, src) for src in issued_files]
@@ -51,7 +51,7 @@ def parse_dv_sources(sources: list[Source]) -> dict[str, CountryData]:
 
 def export_dv_data(countries: dict[str, CountryData]) -> None:
     """Export dict of countries with data into a file."""
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as file:
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as file:
         json.dump(countries, file, cls=EnhancedJSONEncoder, sort_keys=True, indent=2)
 
 
