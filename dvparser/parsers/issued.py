@@ -39,9 +39,7 @@ class IssuedDVParser(Parser):
     def _get_country(self, line: list) -> str:
         return normalize_country(line[0].title())
 
-    def _set_country_data(
-        self, country_data: CountryData, years: list, line: list
-    ) -> CountryData:
+    def _set_country_data(self, country_data: CountryData, years: list, line: list) -> CountryData:
         for i, year in enumerate(years):
             country_data[year].issued = a2i(line[i + 1])
 

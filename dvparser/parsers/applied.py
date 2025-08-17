@@ -47,9 +47,7 @@ class AppliedDVParser(Parser):
     def _get_country(self, line: list) -> str:
         return normalize_country(line[0].title().replace("\r", " "))
 
-    def _set_country_data(
-        self, country_data: CountryData, years: list, line: list
-    ) -> CountryData:
+    def _set_country_data(self, country_data: CountryData, years: list, line: list) -> CountryData:
         for i, year in enumerate(years):
             country_data[year].entrants = a2i(line[3 * i + 1])
             country_data[year].derivatives = a2i(line[3 * i + 2])

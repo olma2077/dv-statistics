@@ -36,14 +36,10 @@ class Parser(ABC):
         pass
 
     @abstractmethod
-    def _set_country_data(
-        self, country_data: CountryData, years: list, line: list
-    ) -> CountryData:
+    def _set_country_data(self, country_data: CountryData, years: list, line: list) -> CountryData:
         pass
 
-    def parse(
-        self, source: Source, countries: dict[str, CountryData]
-    ) -> dict[str, CountryData]:
+    def parse(self, source: Source, countries: dict[str, CountryData]) -> dict[str, CountryData]:
         """Parse file with DV applied data."""
         print("Parsing", source.type, source.file.name)
         file_content = self._get_file_content(source.file)

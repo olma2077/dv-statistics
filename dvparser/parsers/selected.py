@@ -46,8 +46,6 @@ class SelectedDVParser(Parser):
     def _get_country(self, line: list) -> str:
         return normalize_country(line[0])
 
-    def _set_country_data(
-        self, country_data: CountryData, years: list, line: list
-    ) -> CountryData:
+    def _set_country_data(self, country_data: CountryData, years: list, line: list) -> CountryData:
         country_data[years[0]].selected = line[1]
         return country_data
