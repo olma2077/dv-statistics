@@ -11,4 +11,4 @@ def a2i(string: str) -> Optional[int]:
     try:
         return int(string)
     except ValueError:
-        return None if ',' not in string else int(string.replace(',', '_'))
+        return None if "," not in string else int(string.replace(",", "_"))

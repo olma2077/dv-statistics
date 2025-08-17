@@ -1,4 +1,5 @@
 """Parser for issued DV data sources."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterable
@@ -16,6 +17,7 @@ from .parser import Parser
 
 class IssuedDVParser(Parser):
     """Parser implementation for issued DV data sources."""
+
     def _get_file_content(self, file: Path) -> list:
         return tabula.read_pdf(file, pages="all", silent=True)
 
@@ -25,9 +27,9 @@ class IssuedDVParser(Parser):
     def _get_line(self, file_content: list) -> Iterable[list]:
         for line in (line for table in file_content for line in table.values):
             # Skip technical lines
-            if 'Foreign' in line[0] or 'Total' in line[0].title():
+            if "Foreign" in line[0] or "Total" in line[0].title():
                 continue
-            if 'South America' in line[0]:
+            if "South America" in line[0]:
                 continue
             if isinstance(line[1], float):
                 continue
@@ -37,8 +39,10 @@ class IssuedDVParser(Parser):
     def _get_country(self, line: list) -> str:
         return normalize_country(line[0].title())
 
-    def _set_country_data(self, country_data: CountryData, years: list, line: list) -> CountryData:
+    def _set_country_data(
+        self, country_data: CountryData, years: list, line: list
+    ) -> CountryData:
         for i, year in enumerate(years):
-            country_data[year].issued = a2i(line[i+1])
+            country_data[year].issued = a2i(line[i + 1])
 
         return country_data

@@ -27,4 +27,4 @@ def get_parser(source: Source) -> Parser:
     raise ValueError(f"Unknown DV data source: {source.type}")
 
 
-__all__ = ['get_parser']
+__all__ = ["get_parser"]

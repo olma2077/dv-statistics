@@ -1,4 +1,5 @@
-"""Parser for applied DV data sources.  """
+"""Parser for applied DV data sources."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterable
@@ -16,11 +17,12 @@ from .parser import Parser
 
 class AppliedDVParser(Parser):
     """Parser implementation for applied DV data sources."""
+
     def _get_file_content(self, file: Path) -> list:
-        return tabula.read_pdf(file, pages='all', lattice=True, silent=True)
+        return tabula.read_pdf(file, pages="all", lattice=True, silent=True)
 
     def _get_years(self, file_content: list) -> list:
-        return [int(x[3:]) for x in file_content[0].columns if 'FY' in x]
+        return [int(x[3:]) for x in file_content[0].columns if "FY" in x]
 
     def _get_line(self, file_content: list) -> Iterable[list]:
         # 2021 year file has new region column we have to skip
@@ -29,9 +31,9 @@ class AppliedDVParser(Parser):
             # Skip technical lines
             if isinstance(line[0], float):
                 continue
-            if 'Foreign' in line[0] or 'Total' in line[0]:
+            if "Foreign" in line[0] or "Total" in line[0]:
                 continue
-            if 'Region' == line[0]:
+            if "Region" == line[0]:
                 offset = True
                 continue
 
@@ -43,11 +45,13 @@ class AppliedDVParser(Parser):
             yield line
 
     def _get_country(self, line: list) -> str:
-        return normalize_country(line[0].title().replace('\r', ' '))
+        return normalize_country(line[0].title().replace("\r", " "))
 
-    def _set_country_data(self, country_data: CountryData, years: list, line: list) -> CountryData:
+    def _set_country_data(
+        self, country_data: CountryData, years: list, line: list
+    ) -> CountryData:
         for i, year in enumerate(years):
-            country_data[year].entrants = a2i(line[3*i+1])
-            country_data[year].derivatives = a2i(line[3*i+2])
+            country_data[year].entrants = a2i(line[3 * i + 1])
+            country_data[year].derivatives = a2i(line[3 * i + 2])
 
         return country_data
