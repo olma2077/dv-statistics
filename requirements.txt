@@ -8,7 +8,7 @@ numpy==2.3.3
     # via
     #   pandas
     #   tabula-py
-pandas==2.3.2
+pandas==2.3.3
     # via tabula-py
 python-dateutil==2.9.0.post0
     # via pandas
