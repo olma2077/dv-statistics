@@ -22,5 +22,5 @@ tabula-py==2.10.0
     # via dv-statistics (pyproject.toml)
 typing-extensions==4.15.0
     # via beautifulsoup4
-tzdata==2025.2
+tzdata==2025.3
     # via pandas
