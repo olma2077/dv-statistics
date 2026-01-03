@@ -4,7 +4,7 @@ beautifulsoup4==4.14.3
     # via dv-statistics (pyproject.toml)
 distro==1.9.0
     # via tabula-py
-numpy==2.3.5
+numpy==2.4.0
     # via
     #   pandas
     #   tabula-py
@@ -16,7 +16,7 @@ pytz==2025.2
     # via pandas
 six==1.17.0
     # via python-dateutil
-soupsieve==2.8
+soupsieve==2.8.1
     # via beautifulsoup4
 tabula-py==2.10.0
     # via dv-statistics (pyproject.toml)
