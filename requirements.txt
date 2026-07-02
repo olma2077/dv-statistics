@@ -20,7 +20,7 @@ soupsieve==2.8.4
     # via beautifulsoup4
 tabula-py==2.10.0
     # via dv-statistics (pyproject.toml)
-typing-extensions==4.15.0
+typing-extensions==4.16.0
     # via beautifulsoup4
 tzdata==2025.3
     # via pandas
