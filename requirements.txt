@@ -12,7 +12,7 @@ pandas==3.0.4
     # via tabula-py
 python-dateutil==2.9.0.post0
     # via pandas
-pytz==2025.2
+pytz==2026.2
     # via pandas
 six==1.17.0
     # via python-dateutil
