@@ -2,5 +2,5 @@
 #    uv pip compile pyproject.toml --no-deps -o requirements.txt
 beautifulsoup4==4.15.0
     # via dv-statistics (pyproject.toml)
-tabula-py==2.10.0
+tabula-py==2.11.0
     # via dv-statistics (pyproject.toml)
